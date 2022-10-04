@@ -18,8 +18,8 @@ local sources = {
   diagnostics.eslint,
   formatting.prettier,
   -- lua
-  formatting.stylua,
-  diagnostics.luacheck,
+  -- formatting.stylua,
+  -- diagnostics.luacheck,
   -- markdown and other writings
   diagnostics.markdownlint,
   formatting.markdownlint,
