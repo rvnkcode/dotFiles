@@ -28,29 +28,17 @@ packer.startup(function()
     use("L3MON4D3/LuaSnip")
     use({
         "declancm/maximize.nvim",
-        config = function()
-            require("maximize").setup()
-        end,
     })
     use({
         "numToStr/Comment.nvim",
-        config = function()
-            require("Comment").setup()
-        end,
     })
     use({
         "jose-elias-alvarez/null-ls.nvim",
-        config = function()
-            require("null-ls").setup()
-        end,
         requires = { "nvim-lua/plenary.nvim" },
     })
     use({ "williamboman/mason.nvim" })
     use({
         "windwp/nvim-autopairs",
-        config = function()
-            require("nvim-autopairs").setup({})
-        end,
     })
     use({ "akinsho/bufferline.nvim", tag = "v2.*", requires = "kyazdani42/nvim-web-devicons" })
     use({ "hrsh7th/cmp-nvim-lsp" })
@@ -66,11 +54,6 @@ packer.startup(function()
     use({
         "kylechui/nvim-surround",
         tag = "*", -- Use for stability; omit to use `main` branch for the latest features
-        config = function()
-            require("nvim-surround").setup({
-                -- Configuration here, or leave empty to use defaults
-            })
-        end,
     })
     -- snapshots 22.09.18
     use({ "mxsdev/nvim-dap-vscode-js", requires = { "mfussenegger/nvim-dap" } })
@@ -94,4 +77,5 @@ packer.startup(function()
     use("folke/which-key.nvim")
     use({ "mrjones2014/legendary.nvim" })
     use({ "chentoast/marks.nvim" })
+    use({ "rafamadriz/friendly-snippets" })
 end)

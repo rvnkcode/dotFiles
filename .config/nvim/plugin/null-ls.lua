@@ -26,8 +26,11 @@ local sources = {
   formatting.codespell,
   diagnostics.write_good,
   -- others
-  -- formatting.xmlformatter
+  -- formatting.xmlformatter,
   code_actions.gitsigns,
+  -- c++
+  --foramtting.clang-format,
+  diagnostics.cpplint
 }
 
 null_ls.setup({ sources = sources })

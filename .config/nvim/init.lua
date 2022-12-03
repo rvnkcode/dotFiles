@@ -31,6 +31,7 @@ cmd([[autocmd Filetype typescriptreact setlocal shiftwidth=2 softtabstop=2]])
 cmd([[autocmd Filetype javascriptreact setlocal shiftwidth=2 softtabstop=2]])
 cmd([[autocmd Filetype css setlocal shiftwidth=2 softtabstop=2]])
 cmd([[autocmd FileType xml setlocal shiftwidth=2 softtabstop=2]])
+cmd([[autocmd FileType cpp setlocal shiftwidth=2 softtabstop=2]])
 opt.expandtab = true
 opt.undofile = true
 opt.langmap = {
@@ -131,7 +132,7 @@ local has_words_before = function()
 end
 
 local luasnip = require("luasnip")
-
+require("luasnip.loaders.from_vscode").lazy_load()
 cmp.setup({
     snippet = {
         -- REQUIRED - you must specify a snippet engine
@@ -143,8 +144,8 @@ cmp.setup({
         end,
     },
     window = {
-        -- completion = cmp.config.window.bordered(),
-        -- documentation = cmp.config.window.bordered(),
+        completion = cmp.config.window.bordered(),
+        documentation = cmp.config.window.bordered(),
     },
     mapping = cmp.mapping.preset.insert({
         ["<C-b>"] = cmp.mapping.scroll_docs(-4),
@@ -216,7 +217,7 @@ cmp.setup.cmdline(":", {
 })
 
 -- Set up lspconfig.
-local capabilities = require("cmp_nvim_lsp").update_capabilities(vim.lsp.protocol.make_client_capabilities())
+local capabilities = require("cmp_nvim_lsp").default_capabilities(vim.lsp.protocol.make_client_capabilities())
 -- Replace <YOUR_LSP_SERVER> with each lsp server you've enabled.
 require("lspconfig").cssls.setup({
     capabilities = capabilities,
@@ -254,6 +255,7 @@ require("lspconfig").sumneko_lua.setup({
 require("lspconfig").taplo.setup({})
 require("lspconfig").tsserver.setup({})
 require("lspconfig").vimls.setup({})
+require("lspconfig").clangd.setup({})
 -- ====================nvim.cmp====================
 
 -- ====================telescope====================
@@ -328,11 +330,8 @@ g.loaded = 1
 g.loaded_netrwPlugin = 1
 
 require("nvim-tree").setup({
-    keymap.set("n", "\\", ":NvimTreeToggle<CR>", { silent = true }),
+    keymap.set("n", "\\", ":NvimTreeToggle<CR>"),
 })
-
--- ====================comment====================
-require("Comment").setup({})
 
 -- ====================masson====================
 require("mason").setup({
@@ -345,9 +344,6 @@ require("mason").setup({
     },
 })
 
--- ====================auto-pair====================
-require("nvim-autopairs").setup({})
-
 -- ====================debugger====================
 keymap.set("n", "<F5>", ":lua require'dap'.continue()<CR>")
 keymap.set("n", "<F9>", ":lua require'dap'.toggle_breakpoint()<CR>")
@@ -359,7 +355,8 @@ keymap.set("n", "<Leader>lp", ":lua require'dap'.set_breakpoint(nil, nil, vim.fn
 keymap.set("n", "<Leader>dr", ":lua require'dap'.repl.open()<CR>")
 keymap.set("n", "<Leader>dl", ":lua require'dap'.run_last()<CR>")
 
-require("nvim-dap-virtual-text").setup()
+require("nvim-dap-virtual-text").setup({})
+g.dap_virtual_text = true
 
 require("dapui").setup({})
 local dap, dapui = require("dap"), require("dapui")
@@ -398,6 +395,37 @@ for _, language in ipairs({ "typescript", "javascript" }) do
     }
 end
 
+dap.adapters.cppdbg = {
+    id = 'cppdbg',
+    type = 'executable',
+    command = '/Users/ksy/.local/share/nvim/mason/bin/OpenDebugAD7',
+}
+
+dap.configurations.cpp = {
+    {
+        name = "Launch file",
+        type = "cppdbg",
+        request = "launch",
+        program = function()
+            return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+        end,
+        cwd = '${workspaceFolder}',
+        stopAtEntry = true,
+        MIMode = 'lldb'
+    },
+    --[[     {
+        name = 'Attach to gdbserver :1234',
+        type = 'cppdbg',
+        request = 'launch',
+        MIMode = 'gdb',
+        miDebuggerServerAddress = 'localhost:1234',
+        miDebuggerPath = '/usr/bin/gdb',
+        cwd = '${workspaceFolder}',
+        program = function()
+            return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+        end,
+    }, ]]
+}
 -- ====================gitSigns====================
 require("gitsigns").setup({
     on_attach = function(bufnr)
@@ -489,7 +517,7 @@ require("which-key").setup({})
 require("legendary").setup({
     keymaps = {
         { '<leader>v', ':e $MYVIMRC<CR>', description = 'edit init.lua' },
-        { '<leader>F', vim.lsp.buf.formatting_sync, description = 'Format buffer with LSP' },
+        { '<leader>F', vim.lsp.buf.format, description = 'Format buffer with LSP' },
         { "<leader>rn", vim.lsp.buf.rename, description = "rename variable etc..." },
         { "<leader>q", vim.diagnostic.setloclist, description = "see list of diagnostics result" },
         { "[d", vim.diagnostic.goto_prev, description = "move to former diagnostic" },
@@ -509,9 +537,15 @@ require("legendary").setup({
         { "<leader>tf", ":ToggleTerm direction=float<CR>", description = "toggle terminal float" },
         { "<leader>t", "<C-\\><C-n>:ToggleTerm<CR>", mode = "t", description = "toggle terminal in terminal mode" },
         { "<Esc>", "<C-\\><C-n>", mode = "t", description = "escape terminal in terminal mode" },
-        {"<Leader>fd", ":Telescope dap list_breakpoints<CR>", description = "telescope debug point list"}
+        { "<leader>fd", ":Telescope dap list_breakpoints<CR>", description = "telescope debug point list" },
+        { '<leader>le', ':Legendary<CR>', description = 'launch legendary plugin' },
     }
 })
 
 -- ====================marks-nvim====================
 require 'marks'.setup({})
+require("maximize").setup()
+require("Comment").setup()
+require("null-ls").setup({})
+require("nvim-autopairs").setup({})
+require("nvim-surround").setup({})
