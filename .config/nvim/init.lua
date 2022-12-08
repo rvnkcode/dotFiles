@@ -346,6 +346,7 @@ require("mason").setup({
 
 -- ====================debugger====================
 keymap.set("n", "<F5>", ":lua require'dap'.continue()<CR>")
+keymap.set("n", "<F8>", ":DapTerminate<CR>")
 keymap.set("n", "<F9>", ":lua require'dap'.toggle_breakpoint()<CR>")
 keymap.set("n", "<F10>", ":lua require'dap'.step_over()<CR>")
 keymap.set("n", "<F11>", ":lua require'dap'.step_into()<CR>")
@@ -360,6 +361,7 @@ g.dap_virtual_text = true
 
 require("dapui").setup({})
 local dap, dapui = require("dap"), require("dapui")
+-- local dap = require("dap")
 dap.listeners.after.event_initialized["dapui_config"] = function()
     dapui.open()
 end
@@ -368,7 +370,7 @@ dap.listeners.before.event_terminated["dapui_config"] = function()
 end
 dap.listeners.before.event_exited["dapui_config"] = function()
     dapui.close()
-end
+end 
 
 require("dap-vscode-js").setup({
     -- node_path = "node", -- Path of node executable. Defaults to $NODE_PATH, and then "node"
@@ -395,37 +397,35 @@ for _, language in ipairs({ "typescript", "javascript" }) do
     }
 end
 
-dap.adapters.cppdbg = {
-    id = 'cppdbg',
-    type = 'executable',
-    command = '/Users/ksy/.local/share/nvim/mason/bin/OpenDebugAD7',
+dap.adapters.codelldb = {
+    type = 'server',
+    port = "${port}",
+    executable = {
+        -- CHANGE THIS to your path!
+        command = '/Users/ksy/.local/share/nvim/mason/packages/codelldb/codelldb',
+        args = { "--port", "${port}" },
+    }
 }
 
 dap.configurations.cpp = {
     {
         name = "Launch file",
-        type = "cppdbg",
+        type = "codelldb",
         request = "launch",
         program = function()
             return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
         end,
         cwd = '${workspaceFolder}',
-        stopAtEntry = true,
-        MIMode = 'lldb'
+        stopOnEntry = false,
+        terminal = 'integrated',
+        -- terminal = 'console',
+        -- terminal = 'external',
     },
-    --[[     {
-        name = 'Attach to gdbserver :1234',
-        type = 'cppdbg',
-        request = 'launch',
-        MIMode = 'gdb',
-        miDebuggerServerAddress = 'localhost:1234',
-        miDebuggerPath = '/usr/bin/gdb',
-        cwd = '${workspaceFolder}',
-        program = function()
-            return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
-        end,
-    }, ]]
 }
+
+dap.defaults.fallback.focus_terminal = true
+-- dap.defaults.fallback.terminal_win_cmd = '50vsplit new'
+
 -- ====================gitSigns====================
 require("gitsigns").setup({
     on_attach = function(bufnr)
@@ -549,3 +549,4 @@ require("Comment").setup()
 require("null-ls").setup({})
 require("nvim-autopairs").setup({})
 require("nvim-surround").setup({})
+require('clangd_extensions').setup()
