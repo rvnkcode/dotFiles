@@ -1,13 +1,12 @@
--- ====================declair====================
+-- ============================= declair =============================
 local cmd = vim.cmd
 local g = vim.g
 local opt = vim.opt
 local keymap = vim.keymap
 
 g.mapleader = " "
--- ====================declair====================
 
--- ====================basic settings====================
+-- ============================= basic settings =============================
 cmd("language en_US")
 cmd("filetype plugin on")
 opt.autowrite = true
@@ -62,8 +61,8 @@ opt.langmap = {
     "ㅛy",
     "ㅋz",
 }
-opt.foldmethod = "indent"
-cmd([[au BufRead * normal zR]]) -- 처음 파일을 열면 자동으로 folding 되어있는데 이걸 막아줌
+-- opt.foldmethod = "indent"
+-- cmd([[au BufRead * normal zR]]) -- 처음 파일을 열면 자동으로 folding 되어있는데 이걸 막아줌
 
 -- vim에서 복사한 내용이 클립보드에 저장됨!
 opt.clipboard = "unnamed" -- OS마다 설정이 다르기 때문에 확인 필요. 이건 mac 기준
@@ -86,14 +85,11 @@ opt.showtabline = 2
 opt.showmatch = true
 opt.wrap = false
 
--- ====================basic settings====================
+-- ============================= plugins =============================
+cmd([[lua require('plugins')]])
 
--- ====================colorschemes====================
--- opt.backgroud = 'light'
--- cmd("colorscheme monotonic")
--- cmd 'colorscheme hybrid'
--- cmd 'colorscheme rams'
-
+-- ============================= colorschemes =============================
+-- opt.background = 'light'
 local c = require("vscode.colors")
 require("vscode").setup({
     -- Enable transparent background
@@ -117,12 +113,8 @@ require("vscode").setup({
         Cursor = { fg = c.vscDarkBlue, bg = c.vscLightGreen, bold = true },
     },
 })
--- ====================colorschemes====================
 
--- ====================plugins====================
-cmd([[lua require('plugins')]])
-
--- ====================nvim.cmp====================
+-- ============================= autocompletion =============================
 opt.completeopt = { "menu", "menuone", "preview", "noinsert", "noselect" }
 local cmp = require("cmp")
 
@@ -132,13 +124,14 @@ local has_words_before = function()
 end
 
 local luasnip = require("luasnip")
+
 require("luasnip.loaders.from_vscode").lazy_load()
 cmp.setup({
     snippet = {
         -- REQUIRED - you must specify a snippet engine
         expand = function(args)
-            -- vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
             require("luasnip").lsp_expand(args.body) -- For `luasnip` users.
+            -- vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
             -- require('snippy').expand_snippet(args.body) -- For `snippy` users.
             -- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
         end,
@@ -178,8 +171,8 @@ cmp.setup({
     }),
     sources = cmp.config.sources({
         { name = "nvim_lsp" },
-        -- { name = 'vsnip' }, -- For vsnip users.
         { name = "luasnip" }, -- For luasnip users.
+        -- { name = 'vsnip' }, -- For vsnip users.
         -- { name = 'ultisnips' }, -- For ultisnips users.
         -- { name = 'snippy' }, -- For snippy users.
         { name = "nvim_lsp_document_symbol" },
@@ -188,15 +181,6 @@ cmp.setup({
         { name = "nvim_lsp_signature_help" },
     }),
 })
-
--- Set configuration for specific filetype.
---[[ cmp.setup.filetype('gitcommit', {
-    sources = cmp.config.sources({
-      { name = 'cmp_git' }, -- You can specify the `cmp_git` source if you were installed it.
-    }, {
-      { name = 'buffer' },
-    })
-  }) ]]
 
 -- Use buffer source for `/` (if you enabled `native_menu`, this won't work anymore).
 cmp.setup.cmdline("/", {
@@ -216,20 +200,14 @@ cmp.setup.cmdline(":", {
     }),
 })
 
--- Set up lspconfig.
+-- ============================= LSP configuration =============================
 local capabilities = require("cmp_nvim_lsp").default_capabilities(vim.lsp.protocol.make_client_capabilities())
--- Replace <YOUR_LSP_SERVER> with each lsp server you've enabled.
 require("lspconfig").cssls.setup({
     capabilities = capabilities,
 })
 require("lspconfig").html.setup({
     capabilities = capabilities,
 })
-require("lspconfig").cssmodules_ls.setup({})
-require("lspconfig").eslint.setup({})
-require("lspconfig").grammarly.setup({})
-require("lspconfig").jsonls.setup({})
-require("lspconfig").ltex.setup({})
 require("lspconfig").sumneko_lua.setup({
     settings = {
         Lua = {
@@ -252,18 +230,12 @@ require("lspconfig").sumneko_lua.setup({
         },
     },
 })
-require("lspconfig").taplo.setup({})
+require("lspconfig").eslint.setup({})
+require("lspconfig").jsonls.setup({})
 require("lspconfig").tsserver.setup({})
-require("lspconfig").vimls.setup({})
 require("lspconfig").clangd.setup({})
--- ====================nvim.cmp====================
 
--- ====================telescope====================
-keymap.set("n", "<leader>ff", ":Telescope find_files<CR>")
-keymap.set("n", "<leader>fb", ":Telescope buffers<CR>")
-keymap.set("n", "<leader>fg", ":Telescope live_grep<CR>")
-keymap.set("n", "<leader>fr", ":Telescope resume<CR>")
-
+-- ============================= telescope =============================
 local telescope_actions = require("telescope.actions.set")
 
 local fixfolds = {
@@ -289,7 +261,6 @@ require("telescope").setup({
     },
 })
 
--- ====================telescope-ui====================
 require("telescope").setup({
     extensions = {
         ["ui-select"] = {
@@ -302,7 +273,29 @@ require("telescope").setup({
 require("telescope").load_extension("ui-select")
 require("telescope").load_extension("dap")
 
--- ====================lualine====================
+-- ============================= nvim.tree =============================
+-- disable netrw at the very start of your init.lua (strongly advised)
+g.loaded = 1
+g.loaded_netrwPlugin = 1
+
+require("nvim-tree").setup({
+    keymap.set("n", "\\", ":NvimTreeToggle<CR>"),
+})
+
+-- ============================= masson =============================
+require("mason").setup({
+    ui = {
+        icons = {
+            package_installed = "✓",
+            package_pending = "➜",
+            package_uninstalled = "✗",
+        },
+    },
+})
+require("mason-nvim-dap").setup({ automatic_setup = true })
+require("mason-null-ls").setup({ automatic_setup = true })
+
+-- ============================= lualine =============================
 local function maximize_status()
     return vim.t.maximized and "   " or ""
 end
@@ -316,7 +309,7 @@ require("lualine").setup({
     },
 })
 
--- ====================tabline====================
+-- ============================= tabline =============================
 -- opt.termguicolors = true
 require("bufferline").setup({
     options = {
@@ -324,109 +317,17 @@ require("bufferline").setup({
     },
 })
 
--- ====================nvim.tree====================
--- disable netrw at the very start of your init.lua (strongly advised)
-g.loaded = 1
-g.loaded_netrwPlugin = 1
+-- ============================= indent-blankline =============================
+opt.list = true
+opt.listchars:append("eol:↲")
 
-require("nvim-tree").setup({
-    keymap.set("n", "\\", ":NvimTreeToggle<CR>"),
+require("indent_blankline").setup({
+    show_current_context = true,
+    show_current_context_start = true,
+    show_end_of_line = true,
 })
 
--- ====================masson====================
-require("mason").setup({
-    ui = {
-        icons = {
-            package_installed = "✓",
-            package_pending = "➜",
-            package_uninstalled = "✗",
-        },
-    },
-})
-
--- ====================debugger====================
-keymap.set("n", "<F5>", ":lua require'dap'.continue()<CR>")
-keymap.set("n", "<F8>", ":DapTerminate<CR>")
-keymap.set("n", "<F9>", ":lua require'dap'.toggle_breakpoint()<CR>")
-keymap.set("n", "<F10>", ":lua require'dap'.step_over()<CR>")
-keymap.set("n", "<F11>", ":lua require'dap'.step_into()<CR>")
-keymap.set("n", "<F12>", ":lua require'dap'.step_out()<CR>")
-keymap.set("n", "<Leader>B", ":lua require'dap'.set_breakpoint(vim.fn.input('Breakpoint condition: '))<CR>")
-keymap.set("n", "<Leader>lp", ":lua require'dap'.set_breakpoint(nil, nil, vim.fn.input('Log point message: '))<CR>")
-keymap.set("n", "<Leader>dr", ":lua require'dap'.repl.open()<CR>")
-keymap.set("n", "<Leader>dl", ":lua require'dap'.run_last()<CR>")
-
-require("nvim-dap-virtual-text").setup({})
-g.dap_virtual_text = true
-
-require("dapui").setup({})
-local dap, dapui = require("dap"), require("dapui")
--- local dap = require("dap")
-dap.listeners.after.event_initialized["dapui_config"] = function()
-    dapui.open()
-end
-dap.listeners.before.event_terminated["dapui_config"] = function()
-    dapui.close()
-end
-dap.listeners.before.event_exited["dapui_config"] = function()
-    dapui.close()
-end 
-
-require("dap-vscode-js").setup({
-    -- node_path = "node", -- Path of node executable. Defaults to $NODE_PATH, and then "node"
-    -- debugger_path = "(runtimedir)/site/pack/packer/opt/vscode-js-debug", -- Path to vscode-js-debug installation.
-    -- which adapters to register in nvim-dap
-    adapters = { "pwa-node" }, --, 'pwa-chrome', 'pwa-msedge', 'node-terminal', 'pwa-extensionHost' },
-})
-for _, language in ipairs({ "typescript", "javascript" }) do
-    require("dap").configurations[language] = {
-        {
-            type = "pwa-node",
-            request = "launch",
-            name = "Launch file",
-            program = "${file}",
-            cwd = "${workspaceFolder}",
-        },
-        --[[ {
-    type = "pwa-node",
-    request = "attach",
-    name = "Attach",
-    processId = require'dap.utils'.pick_process,
-    cwd = "${workspaceFolder}",
-  } ]]
-    }
-end
-
-dap.adapters.codelldb = {
-    type = 'server',
-    port = "${port}",
-    executable = {
-        -- CHANGE THIS to your path!
-        command = '/Users/ksy/.local/share/nvim/mason/packages/codelldb/codelldb',
-        args = { "--port", "${port}" },
-    }
-}
-
-dap.configurations.cpp = {
-    {
-        name = "Launch file",
-        type = "codelldb",
-        request = "launch",
-        program = function()
-            return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
-        end,
-        cwd = '${workspaceFolder}',
-        stopOnEntry = false,
-        terminal = 'integrated',
-        -- terminal = 'console',
-        -- terminal = 'external',
-    },
-}
-
-dap.defaults.fallback.focus_terminal = true
--- dap.defaults.fallback.terminal_win_cmd = '50vsplit new'
-
--- ====================gitSigns====================
+-- ============================= gitSigns =============================
 require("gitsigns").setup({
     on_attach = function(bufnr)
         local gs = package.loaded.gitsigns
@@ -480,10 +381,7 @@ require("gitsigns").setup({
     end,
 })
 
--- ====================toggleTerm====================
-require("toggleterm").setup()
-
--- ====================bookmark====================
+-- ============================= bookmarks =============================
 require("bookmarks").setup({
     keymap = {
         toggle = "<tab><tab>", -- toggle bookmarks
@@ -502,17 +400,7 @@ require("bookmarks").setup({
     hl_cursorline = "guibg=Gray guifg=White", -- hl bookmarsk window cursorline.
 })
 
--- ====================indent-blankline====================
-opt.list = true
-opt.listchars:append("eol:↲")
-
-require("indent_blankline").setup({
-    show_current_context = true,
-    show_current_context_start = true,
-    show_end_of_line = true,
-})
-
--- ====================keymap plugins====================
+-- ============================= keymaps =============================
 require("which-key").setup({})
 require("legendary").setup({
     keymaps = {
@@ -539,14 +427,101 @@ require("legendary").setup({
         { "<Esc>", "<C-\\><C-n>", mode = "t", description = "escape terminal in terminal mode" },
         { "<leader>fd", ":Telescope dap list_breakpoints<CR>", description = "telescope debug point list" },
         { '<leader>le', ':Legendary<CR>', description = 'launch legendary plugin' },
+        { "<leader>ff", ":Telescope find_files<CR>", description = "Telescope find files" },
+        { "<leader>fb", ":Telescope buffers<CR>", description = "Telescope find buffers" },
+        { "<leader>fg", ":Telescope live_grep<CR>", description = "Telescope live grep" },
+        { "<leader>fr", ":Telescope resume<CR>", description = "Telescope resume" },
+        { "<F5>", ":lua require'dap'.continue()<CR>", description = "DAP continue" },
+        { "<F8>", ":DAPTerminate<CR>", description = "DAP terminate" },
+        { "<F9>", ":lua require'dap'.toggle_breakpoint()<CR>", description = "toggle breakpoint" },
+        { "<F10>", ":lua require'dap'.step_over()<CR>", description = "step over" },
+        { "<F11>", ":lua require'dap'.step_into()<CR>", description = "step into" },
+        { "<F12>", ":lua require'dap'.step_out()<CR>", description = "step out" },
+        { "<leader>B", ":lua require'dap'.set_breakpoint(vim.fn.input('Breakpoint condition: '))<CR>",
+            description = "breakpoint condition" },
+        { "<leader>lp", ":lua require'dap'.set_breakpoint(nil, nil, vim.fn.input('Log point message: '))<CR>",
+            description = "log breakpoint message" },
+        { "<leader>dr", ":lua require'dap'.repl.open()<CR>", description = "repl open" },
+        { "<leader>dl", ":lua require'dap'.run_last()<CR>", description = "run last" },
+        { "<leader>z", ":lua require('maximize').toggle()<CR>", description = "window maximize toggle" },
     }
 })
 
--- ====================marks-nvim====================
-require 'marks'.setup({})
-require("maximize").setup()
-require("Comment").setup()
+-- ============================= debugger =============================
+require("nvim-dap-virtual-text").setup({})
+g.dap_virtual_text = true
+
+require("dapui").setup({})
+local dap, dapui = require("dap"), require("dapui")
+-- local dap = require("dap")
+dap.listeners.after.event_initialized["dapui_config"] = function()
+    dapui.open()
+end
+dap.listeners.before.event_terminated["dapui_config"] = function()
+    dapui.close()
+end
+dap.listeners.before.event_exited["dapui_config"] = function()
+    dapui.close()
+end
+
+require("dap-vscode-js").setup({
+    -- node_path = "node", -- Path of node executable. Defaults to $NODE_PATH, and then "node"
+    -- debugger_path = "(runtimedir)/site/pack/packer/opt/vscode-js-debug", -- Path to vscode-js-debug installation.
+    -- which adapters to register in nvim-dap
+    adapters = { "pwa-node" }, --, 'pwa-chrome', 'pwa-msedge', 'node-terminal', 'pwa-extensionHost' },
+})
+for _, language in ipairs({ "typescript", "javascript" }) do
+    require("dap").configurations[language] = {
+        {
+            type = "pwa-node",
+            request = "launch",
+            name = "Launch file",
+            program = "${file}",
+            cwd = "${workspaceFolder}",
+        },
+        --[[ {
+    type = "pwa-node",
+    request = "attach",
+    name = "Attach",
+    processId = require'dap.utils'.pick_process,
+    cwd = "${workspaceFolder}",
+  } ]]
+    }
+end
+
+dap.adapters.codelldb = {
+    type = 'server',
+    port = "${port}",
+    executable = {
+        -- CHANGE THIS to your path!
+        command = '/Users/ksy/.local/share/nvim/mason/packages/codelldb/codelldb',
+        args = { "--port", "${port}" },
+    }
+}
+
+dap.configurations.cpp = {
+    {
+        name = "Launch file",
+        type = "codelldb",
+        request = "launch",
+        program = function()
+            return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+        end,
+        cwd = '${workspaceFolder}',
+        stopOnEntry = false,
+        terminal = 'integrated',
+    },
+}
+
+dap.defaults.fallback.focus_terminal = true
+
+-- ============================= others =============================
+require("toggleterm").setup({})
+require("marks").setup({})
+require("maximize").setup({})
+require("Comment").setup({})
 require("null-ls").setup({})
 require("nvim-autopairs").setup({})
 require("nvim-surround").setup({})
-require('clangd_extensions').setup()
+require("clangd_extensions").setup({})
+require("null-ls").setup({})

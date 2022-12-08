@@ -8,11 +8,11 @@ local formatting = null_ls.builtins.formatting
 -- hover sources
 -- local hover = null_ls.builtins.hover
 -- completion sources
-local completion = null_ls.builtins.completion
+-- local completion = null_ls.builtins.completion
 
 -- register any number of sources simultaneously
 local sources = {
-  completion.luasnip,
+  -- completion.luasnip,
   -- for web
   code_actions.eslint,
   diagnostics.eslint,
@@ -23,8 +23,8 @@ local sources = {
   -- markdown and other writings
   diagnostics.markdownlint,
   formatting.markdownlint,
-  formatting.codespell,
-  diagnostics.write_good,
+  -- formatting.codespell,
+  -- diagnostics.write_good,
   -- others
   -- formatting.xmlformatter,
   code_actions.gitsigns,
